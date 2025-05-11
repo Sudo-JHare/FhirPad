@@ -1,5 +1,5 @@
 
-![FHIRPAD Logo](static/fhirepad.png)
+![FHIRPAD Logo](static/fhirpad.png)
 
 FHIRPAD - FHIR App Platform
 FHIRPAD is a web application built to facilitate the discovery and sharing of FHIR-based applications, enhancing healthcare interoperability. Users can register, browse, and manage FHIR apps, with features tailored for both general users and administrators.
