@@ -1,16 +1,23 @@
 {% extends "base.html" %}
 {% block title %}FHIRPAD Home{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <div class="text-center mb-5">
-        <img src="{{ url_for('static', filename='fhirpad.png') }}" alt="FHIRPAD" height="60" class="mb-3" onerror="this.style.display='none';">
-        <h1>Welcome to FHIRPAD</h1>
-        <p class="lead">Discover and share FHIR-based applications to enhance healthcare interoperability.</p>
-        <a href="{{ url_for('gallery.register') }}" class="btn btn-primary btn-lg">Submit Your App</a>
-        <a href="{{ url_for('gallery.gallery') }}" class="btn btn-outline-primary btn-lg">Browse Apps</a>
+<div class="px-4 py-5 my-5 text-center">
+    <div class="mb-4">
+        <img class="d-block mx-auto" src="{{ url_for('static', filename='fhirpad.png') }}" alt="FHIRPAD" width="256" height="256">
     </div>
+    <h1 class="display-5 fw-bold text-body-emphasis">Welcome to FHIRPAD</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-2">Discover and share FHIR-based applications to enhance healthcare interoperability.</p>
+        <p class="text-muted">Streamline Your FHIR Workflow</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="{{ url_for('gallery.register') }}" class="btn btn-primary btn-lg px-4 me-sm-3">Submit Your App</a>
+            <a href="{{ url_for('gallery.gallery') }}" class="btn btn-outline-primary btn-lg px-4">Browse Apps</a>
+        </div>
+    </div>
+</div>
 
-    <!-- Featured Apps -->
+<!-- Featured Apps -->
+<div class="container">
     <h2 class="mb-4">Featured Apps</h2>
     {% if featured_apps %}
         <div class="row">

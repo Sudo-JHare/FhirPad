@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}About FHIRPAD{% endblock %}
+{% block content %}
+<div class="px-4 py-5 my-5 text-center">
+    <div class="mb-4">
+        <img class="d-block mx-auto" src="{{ url_for('static', filename='fhirpad.png') }}" alt="FHIRPAD" width="256" height="256">
+    </div>
+    <h1 class="display-5 fw-bold text-body-emphasis">About FHIRPAD</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-2">Discover and share FHIR-based applications to enhance healthcare interoperability.</p>
+        <p class="text-muted">Streamline Your FHIR Workflow</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row g-4">
+        <!-- App Management -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">App Management</h5>
+                    <p class="card-text">Register, edit, and manage your FHIR applications.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('gallery.register') }}" class="btn btn-primary">Register App</a>
+                        <a href="{{ url_for('gallery.my_listings') }}" class="btn btn-outline-secondary">Manage Your Apps</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Admin Controls -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Admin Controls</h5>
+                    <p class="card-text">Manage categories, apps, and users (admin-only).</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('gallery.manage_categories') }}" class="btn btn-outline-secondary">Manage Categories</a>
+                        <a href="{{ url_for('gallery.admin_apps') }}" class="btn btn-outline-secondary">Manage Apps</a>
+                        <a href="{{ url_for('gallery.admin_users') }}" class="btn btn-outline-secondary">Manage Users</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- User Features -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title">User Features</h5>
+                    <p class="card-text">Explore apps and personalize your experience.</p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('gallery.gallery') }}" class="btn btn-outline-secondary">Browse Apps</a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-secondary">Login</a>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-outline-secondary">Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

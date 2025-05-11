@@ -40,6 +40,14 @@ def landing():
     categories = Category.query.all()
     return render_template('landing.html', featured_apps=featured_apps, categories=categories)
 
+@gallery_bp.route('/about')
+def about():
+    return render_template('about.html')
+
+@gallery_bp.route('/disclaimer')
+def disclaimer():
+    return render_template('disclaimer.html')
+
 @gallery_bp.route('/gallery', methods=['GET', 'POST'])
 def gallery():
     form = GalleryFilterForm()

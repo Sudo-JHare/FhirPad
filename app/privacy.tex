@@ -1,0 +1,126 @@
+% Preamble setup for a comprehensive LaTeX document
+\documentclass[a4paper,12pt]{article}
+
+% Including essential packages for formatting and structure
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+
+% Setting page geometry for proper margins
+\geometry{margin=1in}
+
+% Customizing section titles
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+% Setting up the header and footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{FHIRPAD Privacy Policy}
+\fancyfoot[R]{Page \thepage\ of \pageref{LastPage}}
+
+% Defining hyperlink style
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    pdftitle={FHIRPAD Privacy Policy},
+    pdfauthor={FHIRPAD Team},
+    pdfsubject={Privacy Policy},
+    pdfkeywords={privacy, FHIRPAD, data protection}
+}
+
+% Starting the document
+\begin{document}
+
+% Title and date
+\begin{center}
+    {\LARGE\textbf{FHIRPAD Privacy Policy}}\\[0.5cm]
+    {\normalsize Last updated: May 11, 2025}
+\end{center}
+
+% Introduction section
+\section{Introduction}
+Welcome to FHIRPAD, a platform dedicated to discovering and sharing FHIR-based applications to enhance healthcare interoperability. We are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy outlines how we collect, use, disclose, and safeguard your information when you use our website and services.
+
+% Information Collection section
+\section{Information We Collect}
+We may collect the following types of information:
+
+\subsection{Personal Information}
+\begin{itemize}
+    \item \textbf{Account Information}: When you register, we collect your username, email address, and password (hashed for security).
+    \item \textbf{OAuth Information}: If you log in via Google or GitHub, we collect your email address, username, and OAuth ID.
+\end{itemize}
+
+\subsection{User-Submitted Content}
+\begin{itemize}
+    \item \textbf{App Submissions}: When you submit an app, we collect app details such as name, description, developer name, contact email, logo, launch URL, website, and app images.
+\end{itemize}
+
+\subsection{Usage Data}
+\begin{itemize}
+    \item \textbf{Log Data}: We collect information such as your IP address, browser type, pages visited, and timestamps when you access our site.
+    \item \textbf{Cookies}: We use cookies to store theme preferences (light/dark mode) and session information.
+\end{itemize}
+
+% Use of Information section
+\section{How We Use Your Information}
+We use the collected information for the following purposes:
+\begin{itemize}
+    \item To provide and maintain our services, including user authentication and app management.
+    \item To display user-submitted apps in the gallery and detail pages.
+    \item To communicate with you, including responding to inquiries via email (e.g., \href{mailto:support@fhirpad.com}{support@fhirpad.com}).
+    \item To improve our website functionality and user experience.
+    \item To monitor usage and ensure the security of our platform.
+\end{itemize}
+
+% Sharing of Information section
+\section{Sharing of Information}
+We do not sell or trade your personal information. We may share your information in the following cases:
+\begin{itemize}
+    \item \textbf{User-Submitted Apps}: App details (e.g., name, developer, contact email) are publicly displayed on the gallery and app detail pages.
+    \item \textbf{Service Providers}: We may share data with third-party services (e.g., Google OAuth, GitHub OAuth) to facilitate login functionality.
+    \item \textbf{Legal Requirements}: We may disclose information if required by law or to protect the rights, property, or safety of FHIRPAD and its users.
+\end{itemize}
+
+% Data Security section
+\section{Data Security}
+We implement reasonable security measures to protect your information, including:
+\begin{itemize}
+    \item Password hashing using Werkzeug's secure methods.
+    \item Secure session management with Flask-Login.
+    \item Use of HTTPS for data transmission (if configured in production).
+\end{itemize}
+However, no method of transmission over the internet or electronic storage is 100\% secure, and we cannot guarantee absolute security.
+
+% Your Rights section
+\section{Your Rights}
+You have the following rights regarding your personal information:
+\begin{itemize}
+    \item \textbf{Access and Update}: You can access and update your account information via your profile.
+    \item \textbf{Delete}: You can delete your apps via the "My Listings" page. To delete your account, contact \href{mailto:support@fhirpad.com}{support@fhirpad.com}.
+    \item \textbf{Cookies}: You can manage cookie preferences via your browser settings.
+\end{itemize}
+
+% Third-Party Links section
+\section{Third-Party Links}
+FHIRPAD contains links to external websites (e.g., via "Website" and "Try App" buttons). We are not responsible for the privacy practices or content of these third-party sites. These links open in a new tab/window for your convenience.
+
+% Changes to Privacy Policy section
+\section{Changes to This Privacy Policy}
+We may update this Privacy Policy from time to time. The updated version will be posted on this page with the "Last updated" date. We encourage you to review this policy periodically.
+
+% Contact Us section
+\section{Contact Us}
+If you have any questions about this Privacy Policy, please contact us at:
+\begin{itemize}
+    \item Email: \href{mailto:support@fhirpad.com}{support@fhirpad.com}
+\end{itemize}
+
+\end{document}
