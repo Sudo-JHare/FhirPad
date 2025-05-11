@@ -16,7 +16,7 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__, instance_relative_config=True, static_folder='/app/static')
     app.config.from_object(Config)
-    app.config['SERVER_NAME'] = 'sudo-fhir.au'  # Set for production
+    # Remove SERVER_NAME to allow requests from www.sudo-fhir.au
     app.config['PREFERRED_URL_SCHEME'] = 'https'  # Ensure HTTPS URLs
 
     # Handle X-Forwarded-Proto for HTTPS
