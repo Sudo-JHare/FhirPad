@@ -15,11 +15,13 @@
             </h5>
             <div class="d-flex justify-content-center gap-2 mb-4">
                 {% if app.website %}
-                    <a href="{{ app.website }}" class="btn btn-primary" aria-label="Visit {{ app.name }} website">Website</a>
+                    <a href="{{ app.website }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer" aria-label="Visit {{ app.name }} website">Website</a>
                 {% else %}
                     <button class="btn btn-primary" disabled>Website</button>
                 {% endif %}
-                <a href="{{ app.launch_url }}" class="btn btn-outline-primary" aria-label="Try {{ app.name }} with sandbox data">Try App</a>
+                {% if app.launch_url %}
+                    <a href="{{ app.launch_url }}" class="btn btn-outline-primary" target="_blank" rel="noopener noreferrer" aria-label="Try {{ app.name }} with sandbox data">Try App</a>
+                {% endif %}
             </div>
             <hr class="my-4">
             <div class="row g-4">
@@ -62,7 +64,7 @@
                         <hr class="small-hr">
                         <p>
                             {% if app.website %}
-                                <a href="{{ app.website }}" class="text-decoration-none">{{ app.website }}</a>
+                                <a href="{{ app.website }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">{{ app.website }}</a>
                             {% else %}
                                 Not specified.
                             {% endif %}
@@ -72,13 +74,13 @@
                         <section class="mb-3">
                             <h5>Security and Privacy Policy</h5>
                             <hr class="small-hr">
-                            <p><a href="{{ app.website }}/security-and-privacy" class="text-decoration-none">{{ app.website }}/security-and-privacy</a></p>
+                            <p><a href="{{ app.website }}/security-and-privacy" class="text-decoration-none" target="_blank" rel="noopener noreferrer">{{ app.website }}/security-and-privacy</a></p>
                         </section>
                     {% endif %}
                     <section class="mb-3">
                         <h5>Launch URL</h5>
                         <hr class="small-hr">
-                        <p><a href="{{ app.launch_url }}" class="text-decoration-none">{{ app.launch_url }}</a></p>
+                        <p><a href="{{ app.launch_url }}" class="text-decoration-none" target="_blank" rel="noopener noreferrer">{{ app.launch_url }}</a></p>
                     </section>
                     <section class="mb-3">
                         <div class="row g-2">
@@ -95,7 +97,7 @@
                             </div>
                             <div class="col-6">
                                 <h5>FHIR Compatibility</h5>
-                                <hr class="small-hr">
+                                <.ttf class="small-hr">
                                 <p>
                                     {% if app.fhir_compatibility %}
                                         <a href="{{ url_for('gallery.gallery', fhir_support=app.fhir_compatibility_id) }}" class="text-decoration-none">{{ app.fhir_compatibility.name }}</a>
@@ -204,6 +206,7 @@
         border-color: #4dabf7;
     }
     .btn-outline-primary:hover {
+ THESE BUTTONS ARE CURRENTLY DISABLED ON THE DETAIL PAGE
         background-color: #007bff;
         color: white;
     }

@@ -134,10 +134,10 @@
                                 <p class="card-text"><small class="text-muted">By {{ app.developer }}</small></p>
                                 <div class="d-flex flex-wrap gap-2 mb-2">
                                     {% if app.website %}
-                                        <a href="{{ app.website }}" class="btn btn-primary btn-sm" aria-label="Visit {{ app.name }} website">Website</a>
+                                        <a href="{{ app.website }}" class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer" aria-label="Visit {{ app.name }} website">Website</a>
                                     {% endif %}
                                     {% if app.launch_url %}
-                                        <a href="{{ app.launch_url }}" class="btn btn-outline-primary btn-sm" aria-label="Try {{ app.name }} with sandbox data">Try App</a>
+                                        <a href="{{ app.launch_url }}" class="btn btn-outline-primary btn-sm" target="_blank" rel="noopener noreferrer" aria-label="Try {{ app.name }} with sandbox data">Try App</a>
                                     {% endif %}
                                 </div>
                                 <a href="{{ url_for('gallery.app_detail', app_id=app.id) }}" class="btn btn-primary mt-auto">View Details</a>
