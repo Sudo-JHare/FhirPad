@@ -1,19 +1,29 @@
 import os
 import hashlib
-from flask import Flask
+from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from flask_oauthlib.client import OAuth
+from flask_migrate import Migrate
 from config import Config
 from datetime import datetime
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 oauth = OAuth()
+migrate = Migrate()
 
 def create_app():
     app = Flask(__name__, instance_relative_config=True, static_folder='/app/static')
     app.config.from_object(Config)
+    app.config['SERVER_NAME'] = 'sudo-fhir.au'  # Set for production
+    app.config['PREFERRED_URL_SCHEME'] = 'https'  # Ensure HTTPS URLs
+
+    # Handle X-Forwarded-Proto for HTTPS
+    @app.before_request
+    def before_request():
+        if request.headers.get('X-Forwarded-Proto') == 'https':
+            request.scheme = 'https'
 
     try:
         os.makedirs(app.instance_path, exist_ok=True)
@@ -25,6 +35,7 @@ def create_app():
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
     oauth.init_app(app)
+    migrate.init_app(app, db)
 
     from app.models import User
 
