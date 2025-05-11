@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  fhirpad:
+    build: .
+    ports:
+      - "5009:5009"
+    volumes:
+      - ./instance:/app/instance
+      - ./uploads:/app/uploads
+    environment:
+      - FLASK_APP=app
+      - FLASK_ENV=development
+    command: ["flask", "run", "--host=0.0.0.0"]
