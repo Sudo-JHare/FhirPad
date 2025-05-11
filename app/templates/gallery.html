@@ -54,7 +54,7 @@
                         <ul class="dropdown-menu" aria-labelledby="osSupportDropdown">
                             {% for os in os_supports %}
                                 <li>
-                                    <a class="dropdown-item {% if os.id in filter_params.get('os_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.galler', 'os_support', os.id, filter_params, request.args.get('search', '')) }}">{{ os.name }}</a>
+                                    <a class="dropdown-item {% if os.id in filter_params.get('os_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'os_support', os.id, filter_params, request.args.get('search', '')) }}">{{ os.name }}</a>
                                 </li>
                             {% endfor %}
                         </ul>

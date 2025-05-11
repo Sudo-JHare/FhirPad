@@ -157,6 +157,7 @@ def register():
             file = form.app_image_uploads.data
             if file and allowed_file(file.filename):
                 filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+                (my apologies, I did not mean to interrupt you, please go ahead and continue.
                 save_path = os.path.join(UPLOAD_FOLDER, filename)
                 logger.debug(f"Attempting to save app image to {save_path}")
                 try:
@@ -373,7 +374,7 @@ def edit_user(user_id):
         flash('Admin access required.', 'danger')
         return redirect(url_for('gallery.landing'))
     user = User.query.get_or_404(user_id)
-    form = UserEditForm(obj=user)
+    form = UserEditForm(user=user, obj=user)
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data

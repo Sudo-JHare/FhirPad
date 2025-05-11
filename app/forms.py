@@ -18,13 +18,13 @@ def validate_url_or_path(form, field):
         raise ValidationError('Invalid URL or file path.')
 
 def validate_username(form, field):
-    if field.data != form._obj.username:  # Check if username changed
+    if form.user and field.data != form.user.username:  # Check if username changed
         existing_user = User.query.filter_by(username=field.data).first()
         if existing_user:
             raise ValidationError('Username already taken.')
 
 def validate_email(form, field):
-    if field.data != form._obj.email:  # Check if email changed
+    if form.user and field.data != form.user.email:  # Check if email changed
         existing_user = User.query.filter_by(email=field.data).first()
         if existing_user:
             raise ValidationError('Email already registered.')
@@ -90,3 +90,7 @@ class UserEditForm(FlaskForm):
     reset_password = PasswordField('Reset Password', validators=[Optional(), Length(min=6)])
     confirm_reset_password = PasswordField('Confirm Reset Password', validators=[Optional(), EqualTo('reset_password')])
     submit = SubmitField('Save Changes')
+
+    def __init__(self, user=None, *args, **kwargs):
+        super(UserEditForm, self).__init__(*args, **kwargs)
+        self.user = user  # Store the user object for validation
