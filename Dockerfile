@@ -6,6 +6,7 @@ COPY app/ app/
 COPY static/ static/
 COPY instance/ instance/
 COPY config.py .
+COPY seed.py .
 COPY .env .
 EXPOSE 5009
 CMD ["flask", "run", "--host=0.0.0.0"]
