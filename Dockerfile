@@ -8,4 +8,4 @@ COPY instance/ instance/
 COPY config.py .
 COPY .env .
 EXPOSE 5009
-CMD ["flask", "run", "--host=0.0.0.0" "--port=5009"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5009"]

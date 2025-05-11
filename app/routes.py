@@ -154,25 +154,24 @@ def register():
         if form.app_image_urls.data:
             app_images.extend([url.strip() for url in form.app_image_urls.data.splitlines() if url.strip().startswith(('http://', 'https://'))])
         if form.app_image_uploads.data:
-            file = form.app_image_uploads.data
-            if file and allowed_file(file.filename):
-                filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-                (my apologies, I did not mean to interrupt you, please go ahead and continue.
-                save_path = os.path.join(UPLOAD_FOLDER, filename)
-                logger.debug(f"Attempting to save app image to {save_path}")
-                try:
-                    file.save(save_path)
-                    if os.path.exists(save_path):
-                        logger.debug(f"Successfully saved app image to {save_path}")
-                    else:
-                        logger.error(f"Failed to save app image to {save_path}")
-                        flash('Failed to save app image.', 'danger')
+            for file in form.app_image_uploads.data:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+                    save_path = os.path.join(UPLOAD_FOLDER, filename)
+                    logger.debug(f"Attempting to save app image to {save_path}")
+                    try:
+                        file.save(save_path)
+                        if os.path.exists(save_path):
+                            logger.debug(f"Successfully saved app image to {save_path}")
+                        else:
+                            logger.error(f"Failed to save app image to {save_path}")
+                            flash('Failed to save app image.', 'danger')
+                            return render_template('register.html', form=form)
+                        app_images.append(f"/uploads/{filename}")
+                    except Exception as e:
+                        logger.error(f"Error saving app image to {save_path}: {e}")
+                        flash('Error saving app image.', 'danger')
                         return render_template('register.html', form=form)
-                    app_images.append(f"/uploads/{filename}")
-                except Exception as e:
-                    logger.error(f"Error saving app image to {save_path}: {e}")
-                    flash('Error saving app image.', 'danger')
-                    return render_template('register.html', form=form)
 
         app = FHIRApp(
             name=form.name.data,
@@ -258,24 +257,24 @@ def edit_app(app_id):
 
         app_images = [url.strip() for url in form.app_image_urls.data.splitlines() if url.strip()]
         if form.app_image_uploads.data:
-            file = form.app_image_uploads.data
-            if file and allowed_file(file.filename):
-                filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
-                save_path = os.path.join(UPLOAD_FOLDER, filename)
-                logger.debug(f"Attempting to save updated app image to {save_path}")
-                try:
-                    file.save(save_path)
-                    if os.path.exists(save_path):
-                        logger.debug(f"Successfully saved updated app image to {save_path}")
-                    else:
-                        logger.error(f"Failed to save updated app image to {save_path}")
-                        flash('Failed to save app image.', 'danger')
+            for file in form.app_image_uploads.data:
+                if file and allowed_file(file.filename):
+                    filename = secure_filename(f"{uuid.uuid4()}_{file.filename}")
+                    save_path = os.path.join(UPLOAD_FOLDER, filename)
+                    logger.debug(f"Attempting to save updated app image to {save_path}")
+                    try:
+                        file.save(save_path)
+                        if os.path.exists(save_path):
+                            logger.debug(f"Successfully saved updated app image to {save_path}")
+                        else:
+                            logger.error(f"Failed to save updated app image to {save_path}")
+                            flash('Failed to save app image.', 'danger')
+                            return render_template('edit_app.html', form=form, app=app)
+                        app_images.append(f"/uploads/{filename}")
+                    except Exception as e:
+                        logger.error(f"Error saving updated app image to {save_path}: {e}")
+                        flash('Error saving app image.', 'danger')
                         return render_template('edit_app.html', form=form, app=app)
-                    app_images.append(f"/uploads/{filename}")
-                except Exception as e:
-                    logger.error(f"Error saving updated app image to {save_path}: {e}")
-                    flash('Error saving app image.', 'danger')
-                    return render_template('edit_app.html', form=form, app=app)
 
         app.name = form.name.data
         app.description = form.description.data

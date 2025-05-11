@@ -18,7 +18,7 @@
                 <div class="col-md-4 mb-3">
                     <div class="card app-card shadow-sm h-100">
                         {% if app.logo_url %}
-                            <img src="{{ app.logo_url }}" class="card-img-top" alt="{{ app.name }} logo" style="max-height: 150px; object-fit: contain; padding: 1rem;">
+                            <img src="{{ app.logo_url }}" class="card-img-top" alt="{{ app.name }} logo" style="max-height: 150px; object-fit: contain; padding: 1rem;" onerror="this.src='https://via.placeholder.com/150?text=No+Logo';">
                         {% else %}
                             <img src="https://via.placeholder.com/150?text=No+Logo" class="card-img-top" alt="No Logo" style="max-height: 150px; object-fit: contain; padding: 1rem;">
                         {% endif %}
@@ -26,6 +26,14 @@
                             <h5 class="card-title">{{ app.name }}</h5>
                             <p class="card-text flex-grow-1">{{ app.description | truncate(100) }}</p>
                             <p class="card-text"><small class="text-muted">By {{ app.developer }}</small></p>
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                {% if app.website %}
+                                    <a href="{{ app.website }}" class="btn btn-primary btn-sm" aria-label="Visit {{ app.name }} website">Website</a>
+                                {% endif %}
+                                {% if app.launch_url %}
+                                    <a href="{{ app.launch_url }}" class="btn btn-outline-primary btn-sm" aria-label="Try {{ app.name }} with sandbox data">Try App</a>
+                                {% endif %}
+                            </div>
                             <a href="{{ url_for('gallery.app_detail', app_id=app.id) }}" class="btn btn-primary mt-auto">View Details</a>
                         </div>
                     </div>

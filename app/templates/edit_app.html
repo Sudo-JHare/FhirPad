@@ -114,7 +114,8 @@
     </div>
     <div class="mb-3">
         {{ form.app_image_uploads.label(class="form-label") }}
-        {{ form.app_image_uploads(class="form-control") }}
+        {{ form.app_image_uploads(class="form-control", multiple=True) }}
+        <small class="form-text text-muted">Select multiple images to upload.</small>
         {% for error in form.app_image_uploads.errors %}
             <span class="text-danger">{{ error }}</span>
         {% endfor %}

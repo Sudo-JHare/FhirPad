@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileAllowed
+from flask_wtf.file import FileField, FileAllowed, MultipleFileField
 from wtforms import StringField, TextAreaField, SubmitField, PasswordField, SelectField, SelectMultipleField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError
 import re
@@ -9,10 +9,12 @@ from app import db
 def validate_url_or_path(form, field):
     if not field.data:
         return
-    if field.data.startswith('/app/uploads/'):
-        path_pattern = r'^/app/uploads/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_[\w\-\.]+\.(jpg|png)$'
+    # Allow upload paths like /uploads/<uuid>_<filename>.jpg|png
+    if field.data.startswith('/uploads/'):
+        path_pattern = r'^/uploads/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_[\w\-\.]+\.(jpg|png)$'
         if re.match(path_pattern, field.data, re.I):
             return
+    # Allow external URLs
     url_pattern = r'^(https?:\/\/)?([\w\-]+\.)+[\w\-]+(\/[\w\-\.]*)*\/?(\?[^\s]*)?(#[^\s]*)?$'
     if not re.match(url_pattern, field.data):
         raise ValidationError('Invalid URL or file path.')
@@ -44,7 +46,7 @@ class FHIRAppForm(FlaskForm):
     licensing_pricing = SelectField('Licensing & Pricing', coerce=int, validators=[DataRequired()])
     os_support = SelectMultipleField('OS Support', coerce=int, validators=[DataRequired()])
     app_image_urls = TextAreaField('App Image URLs (one per line)', validators=[Optional(), Length(max=1000)], render_kw={"placeholder": "e.g., https://example.com/image1.png"})
-    app_image_uploads = FileField('Upload App Images', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
+    app_image_uploads = MultipleFileField('Upload App Images', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     submit = SubmitField('Register App')
 
     def __init__(self, *args, **kwargs):
