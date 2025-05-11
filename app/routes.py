@@ -1,22 +1,19 @@
-# app/routes.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_from_directory, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import SmartApp, ApplicationType, Category, OSSupport, FHIRSupport, Speciality, PricingLicense, DesignedFor, EHRSupport
-from app.forms import SmartAppForm, GalleryFilterForm
-from sqlalchemy import or_, and_
+from app.models import FHIRApp, ApplicationType, Category, OSSupport, FHIRSupport, Speciality, PricingLicense, DesignedFor, EHRSupport
+from app.forms import FHIRAppForm, GalleryFilterForm, CategoryForm
+from sqlalchemy import or_
 import os
 import logging
 from werkzeug.utils import secure_filename
 import uuid
 
-# Setup logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 gallery_bp = Blueprint('gallery', __name__)
 
-# Absolute path to the upload folder inside the container
 UPLOAD_FOLDER = '/app/uploads/'
 ALLOWED_EXTENSIONS = {'jpg', 'png'}
 
@@ -35,27 +32,31 @@ def uploaded_file(filename):
 
 @gallery_bp.route('/')
 def index():
-    return redirect(url_for('gallery.gallery'))
+    return redirect(url_for('gallery.landing'))
+
+@gallery_bp.route('/landing')
+def landing():
+    featured_apps = FHIRApp.query.order_by(FHIRApp.registration_date.desc()).limit(6).all()
+    categories = Category.query.all()
+    return render_template('landing.html', featured_apps=featured_apps, categories=categories)
 
 @gallery_bp.route('/gallery', methods=['GET', 'POST'])
 def gallery():
     form = GalleryFilterForm()
-    query = SmartApp.query
+    query = FHIRApp.query
     filter_params = {}
 
-    # Handle search
     search_term = request.args.get('search', '').strip()
     if search_term:
         query = query.filter(
             or_(
-                SmartApp.name.ilike(f'%{search_term}%'),
-                SmartApp.description.ilike(f'%{search_term}%'),
-                SmartApp.developer.ilike(f'%{search_term}%')
+                FHIRApp.name.ilike(f'%{search_term}%'),
+                FHIRApp.description.ilike(f'%{search_term}%'),
+                FHIRApp.developer.ilike(f'%{search_term}%')
             )
         )
         filter_params['search'] = search_term
 
-    # Existing filter logic
     application_type_ids = request.args.getlist('application_type', type=int)
     category_ids = request.args.getlist('category', type=int)
     os_support_ids = request.args.getlist('os_support', type=int)
@@ -66,28 +67,28 @@ def gallery():
     ehr_support_ids = request.args.getlist('ehr_support', type=int)
 
     if application_type_ids:
-        query = query.filter(SmartApp.application_type_id.in_(application_type_ids))
+        query = query.filter(FHIRApp.application_type_id.in_(application_type_ids))
         filter_params['application_type'] = application_type_ids
     if category_ids:
-        query = query.filter(or_(*[SmartApp.categories.contains(str(cid)) for cid in category_ids]))
+        query = query.filter(or_(*[FHIRApp.categories.contains(str(cid)) for cid in category_ids]))
         filter_params['category'] = category_ids
     if os_support_ids:
-        query = query.filter(or_(*[SmartApp.os_support.contains(str(oid)) for oid in os_support_ids]))
+        query = query.filter(or_(*[FHIRApp.os_support.contains(str(oid)) for oid in os_support_ids]))
         filter_params['os_support'] = os_support_ids
     if fhir_support_ids:
-        query = query.filter(SmartApp.fhir_compatibility_id.in_(fhir_support_ids))
+        query = query.filter(FHIRApp.fhir_compatibility_id.in_(fhir_support_ids))
         filter_params['fhir_support'] = fhir_support_ids
     if speciality_ids:
-        query = query.filter(or_(*[SmartApp.specialties.contains(str(sid)) for sid in speciality_ids]))
+        query = query.filter(or_(*[FHIRApp.specialties.contains(str(sid)) for sid in speciality_ids]))
         filter_params['speciality'] = speciality_ids
     if pricing_license_ids:
-        query = query.filter(SmartApp.licensing_pricing_id.in_(pricing_license_ids))
+        query = query.filter(FHIRApp.licensing_pricing_id.in_(pricing_license_ids))
         filter_params['pricing_license'] = pricing_license_ids
     if designed_for_ids:
-        query = query.filter(SmartApp.designed_for_id.in_(designed_for_ids))
+        query = query.filter(FHIRApp.designed_for_id.in_(designed_for_ids))
         filter_params['designed_for'] = designed_for_ids
     if ehr_support_ids:
-        query = query.filter(or_(*[SmartApp.ehr_support.contains(str(eid)) for eid in ehr_support_ids]))
+        query = query.filter(or_(*[FHIRApp.ehr_support.contains(str(eid)) for eid in ehr_support_ids]))
         filter_params['ehr_support'] = ehr_support_ids
 
     apps = query.all()
@@ -110,7 +111,7 @@ def gallery():
 
 @gallery_bp.route('/gallery/<int:app_id>')
 def app_detail(app_id):
-    app = SmartApp.query.get_or_404(app_id)
+    app = FHIRApp.query.get_or_404(app_id)
     logger.debug(f"App Detail ID: {app_id}, logo_url: {app.logo_url}, app_images: {app.app_images}")
     app_categories = []
     if app.categories:
@@ -144,7 +145,7 @@ def app_detail(app_id):
 @gallery_bp.route('/gallery/register', methods=['GET', 'POST'])
 @login_required
 def register():
-    form = SmartAppForm()
+    form = FHIRAppForm()
     if form.validate_on_submit():
         scopes = form.scopes.data
         valid_scopes = all(
@@ -153,7 +154,7 @@ def register():
             if scope.strip()
         )
         if not valid_scopes or not scopes.strip():
-            flash('Invalid SMART scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
+            flash('Invalid FHIR scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
             return render_template('register.html', form=form)
 
         try:
@@ -163,47 +164,6 @@ def register():
             logger.error(f"Failed to create {UPLOAD_FOLDER}: {e}")
             flash('Error creating upload directory.', 'danger')
             return render_template('register.html', form=form)
-
-        if form.application_type_new.data:
-            app_type = ApplicationType(name=form.application_type_new.data)
-            db.session.add(app_type)
-            db.session.commit()
-            form.application_type.data = app_type.id
-        if form.categories_new.data:
-            category = Category(name=form.categories_new.data)
-            db.session.add(category)
-            db.session.commit()
-            form.categories.data.append(category.id)
-        if form.os_support_new.data:
-            os_support = OSSupport(name=form.os_support_new.data)
-            db.session.add(os_support)
-            db.session.commit()
-            form.os_support.data.append(os_support.id)
-        if form.fhir_compatibility_new.data:
-            fhir = FHIRSupport(name=form.fhir_compatibility_new.data)
-            db.session.add(fhir)
-            db.session.commit()
-            form.fhir_compatibility.data = fhir.id
-        if form.specialties_new.data:
-            speciality = Speciality(name=form.specialties_new.data)
-            db.session.add(speciality)
-            db.session.commit()
-            form.specialties.data.append(speciality.id)
-        if form.licensing_pricing_new.data:
-            pricing = PricingLicense(name=form.licensing_pricing_new.data)
-            db.session.add(pricing)
-            db.session.commit()
-            form.licensing_pricing.data = pricing.id
-        if form.designed_for_new.data:
-            designed = DesignedFor(name=form.designed_for_new.data)
-            db.session.add(designed)
-            db.session.commit()
-            form.designed_for.data = designed.id
-        if form.ehr_support_new.data:
-            ehr = EHRSupport(name=form.ehr_support_new.data)
-            db.session.add(ehr)
-            db.session.commit()
-            form.ehr_support.data.append(ehr.id)
 
         logo_url = form.logo_url.data
         if form.logo_upload.data:
@@ -250,7 +210,7 @@ def register():
                     flash('Error saving app image.', 'danger')
                     return render_template('register.html', form=form)
 
-        app = SmartApp(
+        app = FHIRApp(
             name=form.name.data,
             description=form.description.data,
             developer=form.developer.data,
@@ -287,12 +247,12 @@ def register():
 @gallery_bp.route('/gallery/edit/<int:app_id>', methods=['GET', 'POST'])
 @login_required
 def edit_app(app_id):
-    app = SmartApp.query.get_or_404(app_id)
-    if app.user_id != current_user.id:
+    app = FHIRApp.query.get_or_404(app_id)
+    if not current_user.is_admin and app.user_id != current_user.id:
         flash('You can only edit your own apps.', 'danger')
         return redirect(url_for('gallery.app_detail', app_id=app_id))
 
-    form = SmartAppForm(obj=app)
+    form = FHIRAppForm(obj=app)
     if not form.is_submitted():
         if app.categories:
             form.categories.data = [int(cid) for cid in app.categories.split(',') if cid]
@@ -316,7 +276,7 @@ def edit_app(app_id):
             if scope.strip()
         )
         if not valid_scopes or not scopes.strip():
-            flash('Invalid SMART scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
+            flash('Invalid FHIR scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
             return render_template('edit_app.html', form=form, app=app)
 
         try:
@@ -326,55 +286,6 @@ def edit_app(app_id):
             logger.error(f"Failed to create {UPLOAD_FOLDER}: {e}")
             flash('Error creating upload directory.', 'danger')
             return render_template('edit_app.html', form=form, app=app)
-
-        if form.application_type_new.data:
-            app_type = ApplicationType(name=form.application_type_new.data)
-            db.session.add(app_type)
-            db.session.commit()
-            form.application_type.data = app_type.id
-        if form.categories_new.data:
-            category = Category(name=form.categories_new.data)
-            db.session.add(category)
-            db.session.commit()
-            if form.categories.data is None:
-                form.categories.data = []
-            form.categories.data.append(category.id)
-        if form.os_support_new.data:
-            os_support = OSSupport(name=form.os_support_new.data)
-            db.session.add(os_support)
-            db.session.commit()
-            if form.os_support.data is None:
-                form.os_support.data = []
-            form.os_support.data.append(os_support.id)
-        if form.fhir_compatibility_new.data:
-            fhir = FHIRSupport(name=form.fhir_compatibility_new.data)
-            db.session.add(fhir)
-            db.session.commit()
-            form.fhir_compatibility.data = fhir.id
-        if form.specialties_new.data:
-            speciality = Speciality(name=form.specialties_new.data)
-            db.session.add(speciality)
-            db.session.commit()
-            if form.specialties.data is None:
-                form.specialties.data = []
-            form.specialties.data.append(speciality.id)
-        if form.licensing_pricing_new.data:
-            pricing = PricingLicense(name=form.licensing_pricing_new.data)
-            db.session.add(pricing)
-            db.session.commit()
-            form.licensing_pricing.data = pricing.id
-        if form.designed_for_new.data:
-            designed = DesignedFor(name=form.designed_for_new.data)
-            db.session.add(designed)
-            db.session.commit()
-            form.designed_for.data = designed.id
-        if form.ehr_support_new.data:
-            ehr = EHRSupport(name=form.ehr_support_new.data)
-            db.session.add(ehr)
-            db.session.commit()
-            if form.ehr_support.data is None:
-                form.ehr_support.data = []
-            form.ehr_support.data.append(ehr.id)
 
         logo_url = form.logo_url.data
         if form.logo_upload.data:
@@ -455,8 +366,8 @@ def edit_app(app_id):
 @gallery_bp.route('/gallery/delete/<int:app_id>', methods=['POST'])
 @login_required
 def delete_app(app_id):
-    app = SmartApp.query.get_or_404(app_id)
-    if app.user_id != current_user.id:
+    app = FHIRApp.query.get_or_404(app_id)
+    if not current_user.is_admin and app.user_id != current_user.id:
         flash('You can only delete your own apps.', 'danger')
         return redirect(url_for('gallery.app_detail', app_id=app_id))
     db.session.delete(app)
@@ -467,38 +378,42 @@ def delete_app(app_id):
 @gallery_bp.route('/my-listings')
 @login_required
 def my_listings():
-    apps = SmartApp.query.filter_by(user_id=current_user.id).all()
+    apps = FHIRApp.query.filter_by(user_id=current_user.id).all()
     return render_template('my_listings.html', apps=apps)
 
-@gallery_bp.route('/test/add')
+@gallery_bp.route('/admin/categories', methods=['GET', 'POST'])
 @login_required
-def add_test_app():
-    logo_url = "https://via.placeholder.com/150"
-    app_images = "https://via.placeholder.com/300"
+def manage_categories():
+    if not current_user.is_admin:
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('gallery.landing'))
+    form = CategoryForm()
+    if form.validate_on_submit():
+        category = Category(name=form.name.data)
+        db.session.add(category)
+        db.session.commit()
+        flash('Category added successfully!', 'success')
+        return redirect(url_for('gallery.manage_categories'))
+    categories = Category.query.all()
+    return render_template('admin_categories.html', form=form, categories=categories)
 
-    test_app = SmartApp(
-        name="Test App",
-        description="A sample SMART on FHIR app.",
-        developer="Test Developer",
-        contact_email="test@example.com",
-        logo_url=logo_url,
-        launch_url="https://example.com/launch",
-        client_id="test-client-id",
-        scopes="patient/Patient.read,launch/patient",
-        website="https://example.com",
-        designed_for_id=DesignedFor.query.filter_by(name="Clinicians").first().id if DesignedFor.query.filter_by(name="Clinicians").first() else None,
-        application_type_id=ApplicationType.query.filter_by(name="SMART").first().id if ApplicationType.query.filter_by(name="SMART").first() else None,
-        fhir_compatibility_id=FHIRSupport.query.filter_by(name="R4").first().id if FHIRSupport.query.filter_by(name="R4").first() else None,
-        categories=','.join(str(c.id) for c in Category.query.filter(Category.name.in_(["Clinical", "Patient Engagement"])).all()) if Category.query.filter(Category.name.in_(["Clinical", "Patient Engagement"])).all() else None,
-        specialties=','.join(str(s.id) for s in Speciality.query.filter(Speciality.name.in_(["Cardiology", "General Practice"])).all()) if Speciality.query.filter(Speciality.name.in_(["Cardiology", "General Practice"])).all() else None,
-        licensing_pricing_id=PricingLicense.query.filter_by(name="Free").first().id if PricingLicense.query.filter_by(name="Free").first() else None,
-        os_support=','.join(str(o.id) for o in OSSupport.query.filter(OSSupport.name.in_(["Web", "iOS", "Android"])).all()) if OSSupport.query.filter(OSSupport.name.in_(["Web", "iOS", "Android"])).all() else None,
-        app_images=app_images,
-        ehr_support=','.join(str(e.id) for e in EHRSupport.query.filter(EHRSupport.name.in_(["Epic", "Cerner"])).all()) if EHRSupport.query.filter(EHRSupport.name.in_(["Epic", "Cerner"])).all() else None,
-        user_id=current_user.id
-    )
-    db.session.add(test_app)
+@gallery_bp.route('/admin/categories/delete/<int:category_id>', methods=['POST'])
+@login_required
+def delete_category(category_id):
+    if not current_user.is_admin:
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('gallery.landing'))
+    category = Category.query.get_or_404(category_id)
+    db.session.delete(category)
     db.session.commit()
-    logger.debug(f"Test app ID: {test_app.id}, logo_url: {test_app.logo_url}")
-    flash('Test app added successfully!', 'success')
-    return redirect(url_for('gallery.gallery'))
+    flash(f'Category "{category.name}" deleted successfully.', 'success')
+    return redirect(url_for('gallery.manage_categories'))
+
+@gallery_bp.route('/admin/apps')
+@login_required
+def admin_apps():
+    if not current_user.is_admin:
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('gallery.landing'))
+    apps = FHIRApp.query.all()
+    return render_template('admin_apps.html', apps=apps)
