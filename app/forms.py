@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, SubmitField, PasswordField, SelectField, SelectMultipleField
+from wtforms import StringField, TextAreaField, SubmitField, PasswordField, SelectField, SelectMultipleField, BooleanField
 from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional, ValidationError
 import re
-from app.models import ApplicationType, Category, OSSupport, FHIRSupport, Speciality, PricingLicense, DesignedFor, EHRSupport
+from app.models import Category, OSSupport, FHIRSupport, PricingLicense, DesignedFor, User
 from app import db
 
 def validate_url_or_path(form, field):
@@ -17,6 +17,18 @@ def validate_url_or_path(form, field):
     if not re.match(url_pattern, field.data):
         raise ValidationError('Invalid URL or file path.')
 
+def validate_username(form, field):
+    if field.data != form._obj.username:  # Check if username changed
+        existing_user = User.query.filter_by(username=field.data).first()
+        if existing_user:
+            raise ValidationError('Username already taken.')
+
+def validate_email(form, field):
+    if field.data != form._obj.email:  # Check if email changed
+        existing_user = User.query.filter_by(email=field.data).first()
+        if existing_user:
+            raise ValidationError('Email already registered.')
+
 class FHIRAppForm(FlaskForm):
     name = StringField('App Name', validators=[DataRequired(), Length(min=3, max=100)])
     description = TextAreaField('Description', validators=[DataRequired(), Length(min=10, max=500)])
@@ -25,31 +37,23 @@ class FHIRAppForm(FlaskForm):
     logo_url = StringField('Logo URL', validators=[Optional(), validate_url_or_path], render_kw={"placeholder": "https://example.com/logo.png or leave blank to upload"})
     logo_upload = FileField('Upload Logo', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
     launch_url = StringField('Launch URL', validators=[DataRequired(), Length(max=200)])
-    client_id = StringField('Client ID', validators=[DataRequired(), Length(min=3, max=100)])
-    scopes = TextAreaField('Scopes (comma-separated)', validators=[DataRequired(), Length(max=500)], render_kw={"placeholder": "patient/Patient.read,launch/patient"})
     website = StringField('Company Website', validators=[Optional(), Length(max=200)], render_kw={"placeholder": "https://example.com"})
     designed_for = SelectField('Designed For', coerce=int, validators=[DataRequired()])
-    application_type = SelectField('Application Type', coerce=int, validators=[DataRequired()])
     fhir_compatibility = SelectField('FHIR Compatibility', coerce=int, validators=[DataRequired()])
     categories = SelectMultipleField('Categories', coerce=int, validators=[DataRequired()])
-    specialties = SelectMultipleField('Specialties', coerce=int, validators=[DataRequired()])
     licensing_pricing = SelectField('Licensing & Pricing', coerce=int, validators=[DataRequired()])
     os_support = SelectMultipleField('OS Support', coerce=int, validators=[DataRequired()])
     app_image_urls = TextAreaField('App Image URLs (one per line)', validators=[Optional(), Length(max=1000)], render_kw={"placeholder": "e.g., https://example.com/image1.png"})
     app_image_uploads = FileField('Upload App Images', validators=[FileAllowed(['jpg', 'png'], 'Images only!')])
-    ehr_support = SelectMultipleField('EHR Support', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Register App')
 
     def __init__(self, *args, **kwargs):
         super(FHIRAppForm, self).__init__(*args, **kwargs)
-        self.application_type.choices = [(t.id, t.name) for t in ApplicationType.query.all()]
         self.categories.choices = [(c.id, c.name) for c in Category.query.all()]
         self.os_support.choices = [(o.id, o.name) for o in OSSupport.query.all()]
         self.fhir_compatibility.choices = [(f.id, f.name) for f in FHIRSupport.query.all()]
-        self.specialties.choices = [(s.id, s.name) for s in Speciality.query.all()]
         self.licensing_pricing.choices = [(p.id, p.name) for p in PricingLicense.query.all()]
         self.designed_for.choices = [(d.id, d.name) for d in DesignedFor.query.all()]
-        self.ehr_support.choices = [(e.id, e.name) for e in EHRSupport.query.all()]
 
 class LoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -77,3 +81,12 @@ class ChangePasswordForm(FlaskForm):
     new_password = PasswordField('New Password', validators=[DataRequired(), Length(min=6)])
     confirm_password = PasswordField('Confirm New Password', validators=[DataRequired(), EqualTo('new_password')])
     submit = SubmitField('Change Password')
+
+class UserEditForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired(), Length(min=3, max=80), validate_username])
+    email = StringField('Email', validators=[DataRequired(), Email(), validate_email])
+    is_admin = BooleanField('Admin Status')
+    force_password_change = BooleanField('Force Password Change')
+    reset_password = PasswordField('Reset Password', validators=[Optional(), Length(min=6)])
+    confirm_reset_password = PasswordField('Confirm Reset Password', validators=[Optional(), EqualTo('reset_password')])
+    submit = SubmitField('Save Changes')

@@ -306,6 +306,9 @@
                             <li class="nav-item">
                                 <a class="nav-link {% if request.endpoint == 'gallery.admin_apps' %}active{% endif %}" href="{{ url_for('gallery.admin_apps') }}">Manage Apps</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'gallery.admin_users' %}active{% endif %}" href="{{ url_for('gallery.admin_users') }}">Manage Users</a>
+                            </li>
                         {% endif %}
                     {% endif %}
                 </ul>

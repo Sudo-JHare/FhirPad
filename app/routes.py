@@ -1,8 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, send_from_directory, abort
 from flask_login import login_required, current_user
 from app import db
-from app.models import FHIRApp, ApplicationType, Category, OSSupport, FHIRSupport, Speciality, PricingLicense, DesignedFor, EHRSupport
-from app.forms import FHIRAppForm, GalleryFilterForm, CategoryForm
+from app.models import FHIRApp, Category, OSSupport, FHIRSupport, PricingLicense, DesignedFor, User
+from app.forms import FHIRAppForm, GalleryFilterForm, CategoryForm, UserEditForm
 from sqlalchemy import or_
 import os
 import logging
@@ -57,18 +57,12 @@ def gallery():
         )
         filter_params['search'] = search_term
 
-    application_type_ids = request.args.getlist('application_type', type=int)
     category_ids = request.args.getlist('category', type=int)
     os_support_ids = request.args.getlist('os_support', type=int)
     fhir_support_ids = request.args.getlist('fhir_support', type=int)
-    speciality_ids = request.args.getlist('speciality', type=int)
     pricing_license_ids = request.args.getlist('pricing_license', type=int)
     designed_for_ids = request.args.getlist('designed_for', type=int)
-    ehr_support_ids = request.args.getlist('ehr_support', type=int)
 
-    if application_type_ids:
-        query = query.filter(FHIRApp.application_type_id.in_(application_type_ids))
-        filter_params['application_type'] = application_type_ids
     if category_ids:
         query = query.filter(or_(*[FHIRApp.categories.contains(str(cid)) for cid in category_ids]))
         filter_params['category'] = category_ids
@@ -78,18 +72,12 @@ def gallery():
     if fhir_support_ids:
         query = query.filter(FHIRApp.fhir_compatibility_id.in_(fhir_support_ids))
         filter_params['fhir_support'] = fhir_support_ids
-    if speciality_ids:
-        query = query.filter(or_(*[FHIRApp.specialties.contains(str(sid)) for sid in speciality_ids]))
-        filter_params['speciality'] = speciality_ids
     if pricing_license_ids:
         query = query.filter(FHIRApp.licensing_pricing_id.in_(pricing_license_ids))
         filter_params['pricing_license'] = pricing_license_ids
     if designed_for_ids:
         query = query.filter(FHIRApp.designed_for_id.in_(designed_for_ids))
         filter_params['designed_for'] = designed_for_ids
-    if ehr_support_ids:
-        query = query.filter(or_(*[FHIRApp.ehr_support.contains(str(eid)) for eid in ehr_support_ids]))
-        filter_params['ehr_support'] = ehr_support_ids
 
     apps = query.all()
     for app in apps:
@@ -99,14 +87,11 @@ def gallery():
         apps=apps,
         form=form,
         filter_params=filter_params,
-        application_types=ApplicationType.query.all(),
         categories=Category.query.all(),
         os_supports=OSSupport.query.all(),
         fhir_supports=FHIRSupport.query.all(),
-        specialties=Speciality.query.all(),
         pricing_licenses=PricingLicense.query.all(),
-        designed_fors=DesignedFor.query.all(),
-        ehr_supports=EHRSupport.query.all()
+        designed_fors=DesignedFor.query.all()
     )
 
 @gallery_bp.route('/gallery/<int:app_id>')
@@ -118,28 +103,16 @@ def app_detail(app_id):
         category_ids = [int(cid) for cid in app.categories.split(',') if cid]
         app_categories = Category.query.filter(Category.id.in_(category_ids)).all()
 
-    app_specialties = []
-    if app.specialties:
-        speciality_ids = [int(sid) for sid in app.specialties.split(',') if sid]
-        app_specialties = Speciality.query.filter(Speciality.id.in_(speciality_ids)).all()
-
     app_os_supports = []
     if app.os_support:
         os_ids = [int(oid) for oid in app.os_support.split(',') if oid]
         app_os_supports = OSSupport.query.filter(OSSupport.id.in_(os_ids)).all()
 
-    app_ehr_supports = []
-    if app.ehr_support:
-        ehr_ids = [int(eid) for eid in app.ehr_support.split(',') if eid]
-        app_ehr_supports = EHRSupport.query.filter(EHRSupport.id.in_(ehr_ids)).all()
-
     return render_template(
         'app_detail.html',
         app=app,
         app_categories=app_categories,
-        app_specialties=app_specialties,
-        app_os_supports=app_os_supports,
-        app_ehr_supports=app_ehr_supports
+        app_os_supports=app_os_supports
     )
 
 @gallery_bp.route('/gallery/register', methods=['GET', 'POST'])
@@ -147,16 +120,6 @@ def app_detail(app_id):
 def register():
     form = FHIRAppForm()
     if form.validate_on_submit():
-        scopes = form.scopes.data
-        valid_scopes = all(
-            scope.strip().startswith(('patient/', 'user/', 'launch', 'openid', 'fhirUser', 'offline_access', 'online_access'))
-            for scope in scopes.split(',')
-            if scope.strip()
-        )
-        if not valid_scopes or not scopes.strip():
-            flash('Invalid FHIR scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
-            return render_template('register.html', form=form)
-
         try:
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             logger.debug(f"Ensured {UPLOAD_FOLDER} exists")
@@ -217,18 +180,13 @@ def register():
             contact_email=form.contact_email.data,
             logo_url=logo_url or None,
             launch_url=form.launch_url.data,
-            client_id=form.client_id.data,
-            scopes=scopes,
             website=form.website.data or None,
             designed_for_id=form.designed_for.data,
-            application_type_id=form.application_type.data,
             fhir_compatibility_id=form.fhir_compatibility.data,
             categories=','.join(map(str, form.categories.data)) if form.categories.data else None,
-            specialties=','.join(map(str, form.specialties.data)) if form.specialties.data else None,
             licensing_pricing_id=form.licensing_pricing.data,
             os_support=','.join(map(str, form.os_support.data)) if form.os_support.data else None,
             app_images=','.join(app_images) if app_images else None,
-            ehr_support=','.join(map(str, form.ehr_support.data)) if form.ehr_support.data else None,
             user_id=current_user.id
         )
         db.session.add(app)
@@ -256,12 +214,8 @@ def edit_app(app_id):
     if not form.is_submitted():
         if app.categories:
             form.categories.data = [int(cid) for cid in app.categories.split(',') if cid]
-        if app.specialties:
-            form.specialties.data = [int(sid) for sid in app.specialties.split(',') if sid]
         if app.os_support:
             form.os_support.data = [int(oid) for oid in app.os_support.split(',') if oid]
-        if app.ehr_support:
-            form.ehr_support.data = [int(eid) for eid in app.ehr_support.split(',') if eid]
         if app.app_images:
             current_images = [img for img in app.app_images.split(',') if img.startswith(('http://', 'https://', '/uploads/'))]
             form.app_image_urls.data = '\n'.join(current_images)
@@ -269,16 +223,6 @@ def edit_app(app_id):
             form.app_image_urls.data = ''
 
     if form.validate_on_submit():
-        scopes = form.scopes.data
-        valid_scopes = all(
-            scope.strip().startswith(('patient/', 'user/', 'launch', 'openid', 'fhirUser', 'offline_access', 'online_access'))
-            for scope in scopes.split(',')
-            if scope.strip()
-        )
-        if not valid_scopes or not scopes.strip():
-            flash('Invalid FHIR scopes. Use formats like patient/Patient.read, launch/patient.', 'danger')
-            return render_template('edit_app.html', form=form, app=app)
-
         try:
             os.makedirs(UPLOAD_FOLDER, exist_ok=True)
             logger.debug(f"Ensured {UPLOAD_FOLDER} exists")
@@ -338,18 +282,13 @@ def edit_app(app_id):
         app.contact_email = form.contact_email.data
         app.logo_url = logo_url
         app.launch_url = form.launch_url.data
-        app.client_id = form.client_id.data
-        app.scopes = scopes
         app.website = form.website.data or None
         app.designed_for_id = form.designed_for.data
-        app.application_type_id = form.application_type.data
         app.fhir_compatibility_id = form.fhir_compatibility.data
         app.categories = ','.join(map(str, form.categories.data)) if form.categories.data else None
-        app.specialties = ','.join(map(str, form.specialties.data)) if form.specialties.data else None
         app.licensing_pricing_id = form.licensing_pricing.data
         app.os_support = ','.join(map(str, form.os_support.data)) if form.os_support.data else None
         app.app_images = ','.join(app_images) if app_images else None
-        app.ehr_support = ','.join(map(str, form.ehr_support.data)) if form.ehr_support.data else None
         try:
             db.session.commit()
             logger.debug(f"Updated app ID: {app.id}, logo_url: {app.logo_url}, app_images: {app.app_images}")
@@ -417,3 +356,37 @@ def admin_apps():
         return redirect(url_for('gallery.landing'))
     apps = FHIRApp.query.all()
     return render_template('admin_apps.html', apps=apps)
+
+@gallery_bp.route('/admin/users', methods=['GET'])
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('gallery.landing'))
+    users = User.query.all()
+    return render_template('admin_users.html', users=users)
+
+@gallery_bp.route('/admin/users/edit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    if not current_user.is_admin:
+        flash('Admin access required.', 'danger')
+        return redirect(url_for('gallery.landing'))
+    user = User.query.get_or_404(user_id)
+    form = UserEditForm(obj=user)
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.is_admin = form.is_admin.data
+        user.force_password_change = form.force_password_change.data
+        if form.reset_password.data:
+            user.set_password(form.reset_password.data)
+        try:
+            db.session.commit()
+            flash(f'User "{user.username}" updated successfully.', 'success')
+        except Exception as e:
+            logger.error(f"Error updating user: {e}")
+            db.session.rollback()
+            flash('Error updating user.', 'danger')
+        return redirect(url_for('gallery.admin_users'))
+    return render_template('admin_edit_user.html', form=form, user=user)

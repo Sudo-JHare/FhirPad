@@ -55,16 +55,6 @@
                         <hr class="small-hr">
                         <p>{{ app.contact_email or 'Not specified.' }}</p>
                     </section>
-                    <section class="mb-3">
-                        <h5>Client ID</h5>
-                        <hr class="small-hr">
-                        <p>{{ app.client_id or 'Not specified.' }}</p>
-                    </section>
-                    <section class="mb-3">
-                        <h5>Scopes</h5>
-                        <hr class="small-hr">
-                        <p>{{ app.scopes or 'Not specified.' }}</p>
-                    </section>
                 </div>
                 <div class="col-md-6">
                     <section class="mb-3">
@@ -104,21 +94,6 @@
                                 </p>
                             </div>
                             <div class="col-6">
-                                <h5>Application Type</h5>
-                                <hr class="small-hr">
-                                <p>
-                                    {% if app.application_type %}
-                                        <a href="{{ url_for('gallery.gallery', application_type=app.application_type_id) }}" class="text-decoration-none">{{ app.application_type.name }}</a>
-                                    {% else %}
-                                        Not specified.
-                                    {% endif %}
-                                </p>
-                            </div>
-                        </div>
-                    </section>
-                    <section class="mb-3">
-                        <div class="row g-2">
-                            <div class="col-6">
                                 <h5>FHIR Compatibility</h5>
                                 <hr class="small-hr">
                                 <p>
@@ -129,33 +104,7 @@
                                     {% endif %}
                                 </p>
                             </div>
-                            <div class="col-6">
-                                <h5>EHR Support</h5>
-                                <hr class="small-hr">
-                                <p>
-                                    {% if app_ehr_supports %}
-                                        {% for ehr in app_ehr_supports %}
-                                            <a href="{{ url_for('gallery.gallery', ehr_support=ehr.id) }}" class="text-decoration-none">{{ ehr.name }}</a>{% if not loop.last %}, {% endif %}
-                                        {% endfor %}
-                                    {% else %}
-                                        Not specified.
-                                    {% endif %}
-                                </p>
-                            </div>
                         </div>
-                    </section>
-                    <section class="mb-3">
-                        <h5>Specialties</h5>
-                        <hr class="small-hr">
-                        <p>
-                            {% if app_specialties %}
-                                {% for speciality in app_specialties %}
-                                    <a href="{{ url_for('gallery.gallery', speciality=speciality.id) }}" class="text-decoration-none">{{ speciality.name }}</a>{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Not specified.
-                            {% endif %}
-                        </p>
                     </section>
                     <section class="mb-3">
                         <h5>OS Support</h5>

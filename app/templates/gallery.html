@@ -36,18 +36,6 @@
                         <a class="nav-link {% if not filter_params and not request.args.get('search') %}active{% endif %}" href="{{ url_for('gallery.gallery') }}">All Apps</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if filter_params.get('application_type') %}active{% endif %}" href="#" id="appTypeDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Application Type
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="appTypeDropdown">
-                            {% for app_type in application_types %}
-                                <li>
-                                    <a class="dropdown-item {% if app_type.id in filter_params.get('application_type', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'application_type', app_type.id, filter_params, request.args.get('search', '')) }}">{{ app_type.name }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle {% if filter_params.get('category') %}active{% endif %}" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Categories
                         </a>
@@ -66,7 +54,7 @@
                         <ul class="dropdown-menu" aria-labelledby="osSupportDropdown">
                             {% for os in os_supports %}
                                 <li>
-                                    <a class="dropdown-item {% if os.id in filter_params.get('os_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'os_support', os.id, filter_params, request.args.get('search', '')) }}">{{ os.name }}</a>
+                                    <a class="dropdown-item {% if os.id in filter_params.get('os_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.galler', 'os_support', os.id, filter_params, request.args.get('search', '')) }}">{{ os.name }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -79,18 +67,6 @@
                             {% for fhir in fhir_supports %}
                                 <li>
                                     <a class="dropdown-item {% if fhir.id in filter_params.get('fhir_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'fhir_support', fhir.id, filter_params, request.args.get('search', '')) }}">{{ fhir.name }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if filter_params.get('speciality') %}active{% endif %}" href="#" id="specialityDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Speciality
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="specialityDropdown">
-                            {% for speciality in specialties %}
-                                <li>
-                                    <a class="dropdown-item {% if speciality.id in filter_params.get('speciality', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'speciality', speciality.id, filter_params, request.args.get('search', '')) }}">{{ speciality.name }}</a>
                                 </li>
                             {% endfor %}
                         </ul>
@@ -119,18 +95,6 @@
                             {% endfor %}
                         </ul>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if filter_params.get('ehr_support') %}active{% endif %}" href="#" id="ehrSupportDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            EHR Support
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="ehrSupportDropdown">
-                            {% for ehr in ehr_supports %}
-                                <li>
-                                    <a class="dropdown-item {% if ehr.id in filter_params.get('ehr_support', []) %}active{% endif %}" href="{{ generate_filter_url('gallery.gallery', 'ehr_support', ehr.id, filter_params, request.args.get('search', '')) }}">{{ ehr.name }}</a>
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </li>
                 </ul>
             </div>
         </div>
@@ -142,7 +106,7 @@
                 <h5>Active Filters:</h5>
                 {% for key, values in filter_params.items() %}
                     {% for value in values %}
-                        {% set item = {'application_type': application_types, 'category': categories, 'os_support': os_supports, 'fhir_support': fhir_supports, 'speciality': specialties, 'pricing_license': pricing_licenses, 'designed_for': designed_fors, 'ehr_support': ehr_supports}[key] | selectattr('id', 'equalto', value) | first %}
+                        {% set item = {'category': categories, 'os_support': os_supports, 'fhir_support': fhir_supports, 'pricing_license': pricing_licenses, 'designed_for': designed_fors}[key] | selectattr('id', 'equalto', value) | first %}
                         {% if item %}
                             <span class="badge bg-primary me-1 filter-chip" data-key="{{ key }}" data-value="{{ value }}" data-bs-toggle="tooltip" title="Click to remove filter">{{ item.name }} <i class="fas fa-times ms-1" onclick="removeFilter('{{ key }}', {{ value }})"></i></span>
                         {% endif %}

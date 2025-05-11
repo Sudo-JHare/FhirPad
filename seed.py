@@ -1,5 +1,5 @@
 from app import db, create_app
-from app.models import ApplicationType, Category, OSSupport, FHIRSupport, Speciality, PricingLicense, DesignedFor, EHRSupport, User
+from app.models import Category, OSSupport, FHIRSupport, PricingLicense, DesignedFor, User
 
 app = create_app()
 
@@ -29,13 +29,9 @@ with app.app_context():
         # Seed admin user
         seed_admin_user()
 
-        # Seed application types
-        app_types = ['FHIR App', 'Bulk Data', 'Health Cards']
-        seed_table(ApplicationType, app_types)
-
         # Seed categories
         categories = [
-            'Care Coordination', 'Clinical Research', 'Data Visualization', 'Disease Management',
+            'Care Coordination', 'Clinical Research', 'Data Visualization', ' Disease Management',
             'Genomics', 'Medication Management', 'Patient Engagement', 'Population Health',
             'Risk Calculation', 'FHIR Tools', 'Telehealth'
         ]
@@ -49,14 +45,6 @@ with app.app_context():
         fhir_supports = ['DSTU 2', 'STU 3', 'R4', 'R5']
         seed_table(FHIRSupport, fhir_supports)
 
-        # Seed specialties
-        specialties = [
-            'Anesthesiology', 'Cardiology', 'Gastroenterology', 'Infectious Disease', 'Neurology',
-            'Obstetrics', 'Oncology', 'Pediatrics', 'Pulmonology', 'Nephrology', 'Rheumatology',
-            'Trauma', 'Primary Care'
-        ]
-        seed_table(Speciality, specialties)
-
         # Seed pricing/licenses
         pricings = ['Open Source', 'Free', 'Per User', 'Site-Based', 'Subscription']
         seed_table(PricingLicense, pricings)
@@ -64,10 +52,6 @@ with app.app_context():
         # Seed designed for
         designed_fors = ['Clinicians', 'Patients', 'Patients & Clinicians', 'IT Professionals']
         seed_table(DesignedFor, designed_fors)
-
-        # Seed EHR support
-        ehr_supports = ['Allscripts', 'Athenahealth', 'Epic', 'Cerner', 'Meditech']
-        seed_table(EHRSupport, ehr_supports)
 
         print("Database seeded successfully!")
     except Exception as e:
