@@ -64,11 +64,15 @@ class FHIRApp(db.Model):
     launch_url = db.Column(db.String(200), nullable=False)
     website = db.Column(db.String(200))
     designed_for_id = db.Column(db.Integer, db.ForeignKey('designed_for.id'))
+    designed_for = db.relationship('DesignedFor', backref='fhir_apps')
     fhir_compatibility_id = db.Column(db.Integer, db.ForeignKey('fhir_support.id'))
+    fhir_compatibility = db.relationship('FHIRSupport', backref='fhir_apps')
     categories = db.Column(db.Text)  # Comma-separated Category IDs
     licensing_pricing_id = db.Column(db.Integer, db.ForeignKey('pricing_license.id'))
+    licensing_pricing = db.relationship('PricingLicense', backref='fhir_apps')
     os_support = db.Column(db.Text)  # Comma-separated OSSupport IDs
     app_images = db.Column(db.Text)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref='fhir_apps')  # Added relationship
     registration_date = db.Column(db.DateTime, default=datetime.utcnow)
     last_updated = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
